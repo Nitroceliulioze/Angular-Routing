@@ -1,4 +1,3 @@
-import { BrowserModule } from '@angular/platform-browser';
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
@@ -15,9 +14,26 @@ export class ProductEditComponent implements OnInit {
   pageTitle = 'Product Edit';
   errorMessage: string | undefined;
 
-  product: Product | null = null;
-
   private dataIsValid: { [key: string]: boolean } = {};
+
+  get isDirty(): boolean {
+    return (
+      JSON.stringify(this.originalProduct) !==
+      JSON.stringify(this.currentProduct)
+    );
+  }
+
+  private currentProduct!: Product;
+  private originalProduct!: Product;
+
+  get product(): Product {
+    return this.currentProduct;
+  }
+
+  set product(value: Product) {
+    this.currentProduct = value;
+    this.originalProduct = { ...value };
+  }
 
   constructor(
     private productService: ProductService,
@@ -42,7 +58,7 @@ export class ProductEditComponent implements OnInit {
   }
 
   onProductRetrieved(product: Product | null): void {
-    this.product = product;
+    this.product = product as Product;
 
     if (!this.product) {
       this.pageTitle = 'No product found';
@@ -81,6 +97,34 @@ export class ProductEditComponent implements OnInit {
     );
   }
 
+  reset() {
+    this.dataIsValid = {};
+    this.currentProduct = {
+      id: 0,
+      productName: '',
+      productCode: '',
+      category: '',
+      tags: [],
+      releaseDate: '',
+      price: 0,
+      description: '',
+      starRating: 0,
+      imageUrl: '',
+    };
+    this.originalProduct = {
+      id: 0,
+      productName: '',
+      productCode: '',
+      category: '',
+      tags: [],
+      releaseDate: '',
+      price: 0,
+      description: '',
+      starRating: 0,
+      imageUrl: '',
+    };
+  }
+
   saveProduct(): void {
     if (this.isValid() && this.product) {
       if (this.product.id === 0) {
@@ -109,6 +153,7 @@ export class ProductEditComponent implements OnInit {
     if (message) {
       this.messageService.addMessage(message);
     }
+    this.reset()
 
     // Navigate back to the product list
     this.router.navigate(['products']);
